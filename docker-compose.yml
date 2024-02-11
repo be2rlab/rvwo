@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  rvwo:
+    build:
+      context: $ROOT_DIR
+      dockerfile: $ROOT_DIR/docker/Dockerfile
+    image: visual_wheel_odometry/rvwo
+    network_mode: host
+    ipc: host
+    environment:
+      - DATASET=$DATASET
+      - SCENE=$SCENE
+      - MODE=$MODE
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - DISPLAY=$DISPLAY
+      - VGL_DISPLAY=${RENDER_DISPLAY:-":1"}
+    volumes:
+      - /tmp/.X11-unix/:/tmp/.X11-unix
+      - $CACHE_DIR/:/output
+      - $DATA_DIR/:/data
+    runtime: nvidia
+    privileged: true
+    command: bash
+  
+  rvwo-debug:
+    build:
+      context: $ROOT_DIR
+      dockerfile: $ROOT_DIR/docker/Dockerfile
+    image: visual_wheel_odometry/rvwo
+    network_mode: host
+    ipc: host
+    environment:
+      - DATASET=$DATASET
+      - SCENE=$SCENE
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+      - DISPLAY=$DISPLAY
+      - VGL_DISPLAY=${RENDER_DISPLAY:-":1"}
+    volumes:
+      - /tmp/.X11-unix/:/tmp/.X11-unix
+      - $CACHE_DIR/:/output
+      - $DATA_DIR/:/data
+    runtime: nvidia
+    privileged: true
+    command: bash
