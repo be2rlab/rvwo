@@ -4,7 +4,7 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
 ROOT_DIR := $(MKFILE_DIR)
 
-DATA_DIR ?= /home/sber20/dev/data
+DATA_DIR ?= /home/data
 
 PARAMETERS := ROOT_DIR=$(ROOT_DIR) \
 	DATA_DIR=$(DATA_DIR)
