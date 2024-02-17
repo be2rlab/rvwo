@@ -20,46 +20,23 @@
  */
 
 #include "map/blocks/key_frame.h"
+#include "utils/converter.h"
 #include <mutex>
-#include "Converter.h"
-#include "ImuTypes.h"
 
 namespace RVWO {
 
 long unsigned int KeyFrame::nNextId = 0;
 
 KeyFrame::KeyFrame()
-    : mnFrameId(0),
-      mTimeStamp(0),
-      mnGridCols(FRAME_GRID_COLS),
-      mnGridRows(FRAME_GRID_ROWS),
-      mfGridElementWidthInv(0),
-      mfGridElementHeightInv(0),
-      mnTrackReferenceForFrame(0),
-      mnFuseTargetForKF(0),
-      mnBALocalForKF(0),
-      mnBAFixedForKF(0),
-      mnBALocalForMerge(0),
-      mnLoopQuery(0),
-      mnLoopWords(0),
-      mnRelocQuery(0),
-      mnRelocWords(0),
-      mnMergeQuery(0),
-      mnMergeWords(0),
-      mnBAGlobalForKF(0),
-      fx(0),
-      fy(0),
-      cx(0),
-      cy(0),
-      invfx(0),
-      invfy(0),
-      mnPlaceRecognitionQuery(0),
-      mnPlaceRecognitionWords(0),
-      mPlaceRecognitionScore(0),
-      mbf(0),
-      mb(0),
-      mThDepth(0),
-      N(0),
+    : mnFrameId(0), mTimeStamp(0), mnGridCols(FRAME_GRID_COLS),
+      mnGridRows(FRAME_GRID_ROWS), mfGridElementWidthInv(0),
+      mfGridElementHeightInv(0), mnTrackReferenceForFrame(0),
+      mnFuseTargetForKF(0), mnBALocalForKF(0), mnBAFixedForKF(0),
+      mnBALocalForMerge(0), mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0),
+      mnRelocWords(0), mnMergeQuery(0), mnMergeWords(0), mnBAGlobalForKF(0),
+      fx(0), fy(0), cx(0), cy(0), invfx(0), invfy(0),
+      mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0),
+      mPlaceRecognitionScore(0), mbf(0), mb(0), mThDepth(0), N(0),
       mvKeys(static_cast<vector<cv::KeyPoint>>(0)),
       mvKeysUn(static_cast<vector<cv::KeyPoint>>(0)),
       mvSegVal(static_cast<float>(0.0f)),
@@ -67,128 +44,60 @@ KeyFrame::KeyFrame()
       mvProb(static_cast<vector<double>>(0)),
       mvSegDynKeys(static_cast<vector<cv::KeyPoint>>(NULL)),
       mvuRight(static_cast<vector<float>>(0)),
-      mvDepth(static_cast<vector<float>>(0)),
-      mnScaleLevels(0),
-      mfScaleFactor(0),
-      mfLogScaleFactor(0),
-      mvScaleFactors(0),
-      mvLevelSigma2(0),
-      mvInvLevelSigma2(0),
-      mnMinX(0),
-      mnMinY(0),
-      mnMaxX(0),
-      mnMaxY(0),
-      mPrevKF(static_cast<KeyFrame *>(nullptr)),
-      mNextKF(static_cast<KeyFrame *>(nullptr)),
-      mbFirstConnection(true),
-      mpParent(nullptr),
-      mbNotErase(false),
-      mbToBeErased(false),
-      mbBad(false),
-      mHalfBaseline(0),
-      mbCurrentPlaceRecognition(false),
+      mvDepth(static_cast<vector<float>>(0)), mnScaleLevels(0),
+      mfScaleFactor(0), mfLogScaleFactor(0), mvScaleFactors(0),
+      mvLevelSigma2(0), mvInvLevelSigma2(0), mnMinX(0), mnMinY(0), mnMaxX(0),
+      mnMaxY(0), mPrevKF(static_cast<KeyFrame *>(nullptr)),
+      mNextKF(static_cast<KeyFrame *>(nullptr)), mbFirstConnection(true),
+      mpParent(nullptr), mbNotErase(false), mbToBeErased(false), mbBad(false),
+      mHalfBaseline(0), mbCurrentPlaceRecognition(false),
       mnMergeCorrectedForKF(0),
       // depth_(static_cast<cv::Mat*>(NULL)),
       // gray_(static_cast<cv::Mat*>(NULL)),
-      NLeft(0),
-      NRight(0),
-      mnNumberOfOpt(0),
-      mbHasVelocity(false) {}
+      NLeft(0), NRight(0), mnNumberOfOpt(0), mbHasVelocity(false) {}
 
 KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
-    : bImu(pMap->isImuInitialized()),
-      mnFrameId(F.mnId),
-      mTimeStamp(F.mTimeStamp),
-      mnGridCols(FRAME_GRID_COLS),
+    : mnFrameId(F.mnId), mTimeStamp(F.mTimeStamp), mnGridCols(FRAME_GRID_COLS),
       mnGridRows(FRAME_GRID_ROWS),
       mfGridElementWidthInv(F.mfGridElementWidthInv),
       mfGridElementHeightInv(F.mfGridElementHeightInv),
-      mnTrackReferenceForFrame(0),
-      mnFuseTargetForKF(0),
-      mnBALocalForKF(0),
-      mnBAFixedForKF(0),
-      mnBALocalForMerge(0),
-      mnLoopQuery(0),
-      mnLoopWords(0),
-      mnRelocQuery(0),
-      mnRelocWords(0),
-      mnBAGlobalForKF(0),
-      mnPlaceRecognitionQuery(0),
-      mnPlaceRecognitionWords(0),
-      mPlaceRecognitionScore(0),
-      fx(F.fx),
-      fy(F.fy),
-      cx(F.cx),
-      cy(F.cy),
-      invfx(F.invfx),
-      invfy(F.invfy),
-      mbf(F.mbf),
-      mb(F.mb),
-      mThDepth(F.mThDepth),
-      N(F.N),
-      mvKeys(F.mvKeys),
-      mvKeysUn(F.mvKeysUn),
-      mvSegVal(F.mvSegVal),
-      mbIsPropagated(F.mbIsPropagated),
-      mvProb(F.mvProb),
-      mvSegDynKeys(F.mvDynKeys),
-      mvuRight(F.mvuRight),
-      mvDepth(F.mvDepth),
-      mDescriptors(F.mDescriptors.clone()),
-      mBowVec(F.mBowVec),
-      mFeatVec(F.mFeatVec),
-      mnScaleLevels(F.mnScaleLevels),
-      mfScaleFactor(F.mfScaleFactor),
-      mfLogScaleFactor(F.mfLogScaleFactor),
-      mvScaleFactors(F.mvScaleFactors),
-      mvLevelSigma2(F.mvLevelSigma2),
-      mvInvLevelSigma2(F.mvInvLevelSigma2),
-      mnMinX(F.mnMinX),
-      mnMinY(F.mnMinY),
-      mnMaxX(F.mnMaxX),
-      mnMaxY(F.mnMaxY),
-      mK_(F.mK_),
-      mPrevKF(nullptr),
-      mNextKF(nullptr),
-      mpImuPreintegrated(F.mpImuPreintegrated),
-      mImuCalib(F.mImuCalib),
-      mpOdomPreintegrated(F.mpOdomPreintegrated),
-      mvpMapPoints(F.mvpMapPoints),
-      mpKeyFrameDB(pKFDB),
-      mpORBvocabulary(F.mpORBvocabulary),
-      mbFirstConnection(true),
-      mpParent(nullptr),
-      mDistCoef(F.mDistCoef),
-      mbNotErase(false),
-      mnDataset(F.mnDataset),
-      imgLeft(F.imgLeft.clone()),
-      mbToBeErased(false),
-      mbBad(false),
-      mHalfBaseline(F.mb / 2),
-      mpMap(pMap),
-      mbCurrentPlaceRecognition(false),
-      mNameFile(F.mNameFile),
-      mnMergeCorrectedForKF(0),
-      depth_(F.depth_.clone()),
-      gray_(F.gray_.clone()),
-      mpCamera(F.mpCamera),
-      mpCamera2(F.mpCamera2),
+      mnTrackReferenceForFrame(0), mnFuseTargetForKF(0), mnBALocalForKF(0),
+      mnBAFixedForKF(0), mnBALocalForMerge(0), mnLoopQuery(0), mnLoopWords(0),
+      mnRelocQuery(0), mnRelocWords(0), mnBAGlobalForKF(0),
+      mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0),
+      mPlaceRecognitionScore(0), fx(F.fx), fy(F.fy), cx(F.cx), cy(F.cy),
+      invfx(F.invfx), invfy(F.invfy), mbf(F.mbf), mb(F.mb),
+      mThDepth(F.mThDepth), N(F.N), mvKeys(F.mvKeys), mvKeysUn(F.mvKeysUn),
+      mvSegVal(F.mvSegVal), mbIsPropagated(F.mbIsPropagated), mvProb(F.mvProb),
+      mvSegDynKeys(F.mvDynKeys), mvuRight(F.mvuRight), mvDepth(F.mvDepth),
+      mDescriptors(F.mDescriptors.clone()), mBowVec(F.mBowVec),
+      mFeatVec(F.mFeatVec), mnScaleLevels(F.mnScaleLevels),
+      mfScaleFactor(F.mfScaleFactor), mfLogScaleFactor(F.mfLogScaleFactor),
+      mvScaleFactors(F.mvScaleFactors), mvLevelSigma2(F.mvLevelSigma2),
+      mvInvLevelSigma2(F.mvInvLevelSigma2), mnMinX(F.mnMinX), mnMinY(F.mnMinY),
+      mnMaxX(F.mnMaxX), mnMaxY(F.mnMaxY), mK_(F.mK_), mPrevKF(nullptr),
+      mNextKF(nullptr), mpOdomPreintegrated(F.mpOdomPreintegrated),
+      mvpMapPoints(F.mvpMapPoints), mpKeyFrameDB(pKFDB),
+      mpORBvocabulary(F.mpORBvocabulary), mbFirstConnection(true),
+      mpParent(nullptr), mDistCoef(F.mDistCoef), mbNotErase(false),
+      mnDataset(F.mnDataset), imgLeft(F.imgLeft.clone()), mbToBeErased(false),
+      mbBad(false), mHalfBaseline(F.mb / 2), mpMap(pMap),
+      mbCurrentPlaceRecognition(false), mNameFile(F.mNameFile),
+      mnMergeCorrectedForKF(0), depth_(F.depth_.clone()),
+      gray_(F.gray_.clone()), mpCamera(F.mpCamera), mpCamera2(F.mpCamera2),
       mvLeftToRightMatch(F.mvLeftToRightMatch),
-      mvRightToLeftMatch(F.mvRightToLeftMatch),
-      mTlr(F.GetRelativePoseTlr()),
-      mvKeysRight(F.mvKeysRight),
-      NLeft(F.Nleft),
-      NRight(F.Nright),
-      mTrl(F.GetRelativePoseTrl()),
-      mnNumberOfOpt(0),
-      mbHasVelocity(false) {
+      mvRightToLeftMatch(F.mvRightToLeftMatch), mTlr(F.GetRelativePoseTlr()),
+      mvKeysRight(F.mvKeysRight), NLeft(F.Nleft), NRight(F.Nright),
+      mTrl(F.GetRelativePoseTrl()), mnNumberOfOpt(0), mbHasVelocity(false) {
   mnId = nNextId++;
 
   mGrid.resize(mnGridCols);
-  if (F.Nleft != -1) mGridRight.resize(mnGridCols);
+  if (F.Nleft != -1)
+    mGridRight.resize(mnGridCols);
   for (int i = 0; i < mnGridCols; i++) {
     mGrid[i].resize(mnGridRows);
-    if (F.Nleft != -1) mGridRight[i].resize(mnGridRows);
+    if (F.Nleft != -1)
+      mGridRight[i].resize(mnGridRows);
     for (int j = 0; j < mnGridRows; j++) {
       mGrid[i][j] = F.mGrid[i][j];
       if (F.Nleft != -1) {
@@ -205,7 +114,6 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
     mbHasVelocity = true;
   }
 
-  mImuBias = F.mImuBias;
   SetPose(F.GetPose());
 
   mnOriginMapId = pMap->GetId();
@@ -228,11 +136,6 @@ void KeyFrame::SetPose(const Sophus::SE3f &Tcw) {
   mRcw = mTcw.rotationMatrix();
   mTwc = mTcw.inverse();
   mRwc = mTwc.rotationMatrix();
-
-  if (mImuCalib.mbIsSet)  // TODO Use a flag instead of the OpenCV matrix
-  {
-    mOwb = mRwc * mImuCalib.mTcb.translation() + mTwc.translation();
-  }
 }
 
 void KeyFrame::SetVelocity(const Eigen::Vector3f &Vw) {
@@ -254,21 +157,6 @@ Sophus::SE3f KeyFrame::GetPoseInverse() {
 Eigen::Vector3f KeyFrame::GetCameraCenter() {
   unique_lock<mutex> lock(mMutexPose);
   return mTwc.translation();
-}
-
-Eigen::Vector3f KeyFrame::GetImuPosition() {
-  unique_lock<mutex> lock(mMutexPose);
-  return mOwb;
-}
-
-Eigen::Matrix3f KeyFrame::GetImuRotation() {
-  unique_lock<mutex> lock(mMutexPose);
-  return (mTwc * mImuCalib.mTcb).rotationMatrix();
-}
-
-Sophus::SE3f KeyFrame::GetImuPose() {
-  unique_lock<mutex> lock(mMutexPose);
-  return mTwc * mImuCalib.mTcb;
 }
 
 Eigen::Matrix3f KeyFrame::GetRotation() {
@@ -378,7 +266,8 @@ int KeyFrame::GetNumberMPs() {
   unique_lock<mutex> lock(mMutexFeatures);
   int numberMPs = 0;
   for (auto &mvpMapPoint : mvpMapPoints) {
-    if (!mvpMapPoint) continue;
+    if (!mvpMapPoint)
+      continue;
     numberMPs++;
   }
   return numberMPs;
@@ -411,9 +300,11 @@ set<MapPoint *> KeyFrame::GetMapPoints() {
   unique_lock<mutex> lock(mMutexFeatures);
   set<MapPoint *> s;
   for (auto &mvpMapPoint : mvpMapPoints) {
-    if (!mvpMapPoint) continue;
+    if (!mvpMapPoint)
+      continue;
     MapPoint *pMP = mvpMapPoint;
-    if (!pMP->isBad()) s.insert(pMP);
+    if (!pMP->isBad())
+      s.insert(pMP);
   }
   return s;
 }
@@ -428,7 +319,8 @@ int KeyFrame::TrackedMapPoints(const int &minObs) {
     if (pMP) {
       if (!pMP->isBad()) {
         if (bCheckObs) {
-          if (mvpMapPoints[i]->Observations() >= minObs) nPoints++;
+          if (mvpMapPoints[i]->Observations() >= minObs)
+            nPoints++;
         } else
           nPoints++;
       }
@@ -461,9 +353,11 @@ void KeyFrame::UpdateConnections(bool upParent) {
   // For all map points in keyframe check in which other keyframes are they seen
   // Increase counter for those keyframes
   for (auto pMP : vpMP) {
-    if (!pMP) continue;
+    if (!pMP)
+      continue;
 
-    if (pMP->isBad()) continue;
+    if (pMP->isBad())
+      continue;
 
     map<KeyFrame *, tuple<int, int>> observations = pMP->GetObservations();
 
@@ -476,7 +370,8 @@ void KeyFrame::UpdateConnections(bool upParent) {
   }
 
   // This should not happen
-  if (KFcounter.empty()) return;
+  if (KFcounter.empty())
+    return;
 
   // If the counter is greater than threshold add connection
   // In case no keyframe counter is over threshold add the one with maximum
@@ -487,7 +382,8 @@ void KeyFrame::UpdateConnections(bool upParent) {
 
   vector<pair<int, KeyFrame *>> vPairs;
   vPairs.reserve(KFcounter.size());
-  if (!upParent) cout << "UPDATE_CONN: current KF " << mnId << endl;
+  if (!upParent)
+    cout << "UPDATE_CONN: current KF " << mnId << endl;
   for (auto &mit : KFcounter) {
     if (!upParent)
       cout << "  UPDATE_CONN: KF " << mit.first->mnId
@@ -643,7 +539,8 @@ void KeyFrame::SetBadFlag() {
 
     // Update Spanning Tree
     set<KeyFrame *> sParentCandidates;
-    if (mpParent) sParentCandidates.insert(mpParent);
+    if (mpParent)
+      sParentCandidates.insert(mpParent);
 
     // Assign at each iteration one children with a parent (the pair with
     // highest covisibility weight) Include that children as new parent
@@ -656,7 +553,8 @@ void KeyFrame::SetBadFlag() {
       KeyFrame *pP;
 
       for (auto pKF : mspChildrens) {
-        if (pKF->isBad()) continue;
+        if (pKF->isBad())
+          continue;
 
         // Check if a parent candidate is connected to the keyframe
         vector<KeyFrame *> vpConnected = pKF->GetVectorCovisibleKeyFrames();
@@ -717,7 +615,8 @@ void KeyFrame::EraseConnection(KeyFrame *pKF) {
     }
   }
 
-  if (bUpdate) UpdateBestCovisibles();
+  if (bUpdate)
+    UpdateBestCovisibles();
 }
 
 vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y,
@@ -731,34 +630,39 @@ vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y,
 
   const int nMinCellX =
       max(0, (int)floor((x - mnMinX - factorX) * mfGridElementWidthInv));
-  if (nMinCellX >= mnGridCols) return vIndices;
+  if (nMinCellX >= mnGridCols)
+    return vIndices;
 
   const int nMaxCellX =
       min((int)mnGridCols - 1,
           (int)ceil((x - mnMinX + factorX) * mfGridElementWidthInv));
-  if (nMaxCellX < 0) return vIndices;
+  if (nMaxCellX < 0)
+    return vIndices;
 
   const int nMinCellY =
       max(0, (int)floor((y - mnMinY - factorY) * mfGridElementHeightInv));
-  if (nMinCellY >= mnGridRows) return vIndices;
+  if (nMinCellY >= mnGridRows)
+    return vIndices;
 
   const int nMaxCellY =
       min((int)mnGridRows - 1,
           (int)ceil((y - mnMinY + factorY) * mfGridElementHeightInv));
-  if (nMaxCellY < 0) return vIndices;
+  if (nMaxCellY < 0)
+    return vIndices;
 
   for (int ix = nMinCellX; ix <= nMaxCellX; ix++) {
     for (int iy = nMinCellY; iy <= nMaxCellY; iy++) {
       const vector<size_t> vCell =
           (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
       for (unsigned long j : vCell) {
-        const cv::KeyPoint &kpUn = (NLeft == -1)
-                                       ? mvKeysUn[j]
-                                       : (!bRight) ? mvKeys[j] : mvKeysRight[j];
+        const cv::KeyPoint &kpUn = (NLeft == -1) ? mvKeysUn[j]
+                                   : (!bRight)   ? mvKeys[j]
+                                                 : mvKeysRight[j];
         const float distx = kpUn.pt.x - x;
         const float disty = kpUn.pt.y - y;
 
-        if (fabs(distx) < r && fabs(disty) < r) vIndices.push_back(j);
+        if (fabs(distx) < r && fabs(disty) < r)
+          vIndices.push_back(j);
       }
     }
   }
@@ -787,7 +691,8 @@ bool KeyFrame::UnprojectStereo(int i, Eigen::Vector3f &x3D) {
 }
 
 float KeyFrame::ComputeSceneMedianDepth(const int q) {
-  if (N == 0) return -1.0;
+  if (N == 0)
+    return -1.0;
 
   vector<MapPoint *> vpMapPoints;
   Eigen::Matrix3f Rcw;
@@ -818,27 +723,6 @@ float KeyFrame::ComputeSceneMedianDepth(const int q) {
   return vDepths[(vDepths.size() - 1) / q];
 }
 
-void KeyFrame::SetNewBias(const IMU::Bias &b) {
-  unique_lock<mutex> lock(mMutexPose);
-  mImuBias = b;
-  if (mpImuPreintegrated) mpImuPreintegrated->SetNewBias(b);
-}
-
-Eigen::Vector3f KeyFrame::GetGyroBias() {
-  unique_lock<mutex> lock(mMutexPose);
-  return Eigen::Vector3f(mImuBias.bwx, mImuBias.bwy, mImuBias.bwz);
-}
-
-Eigen::Vector3f KeyFrame::GetAccBias() {
-  unique_lock<mutex> lock(mMutexPose);
-  return Eigen::Vector3f(mImuBias.bax, mImuBias.bay, mImuBias.baz);
-}
-
-IMU::Bias KeyFrame::GetImuBias() {
-  unique_lock<mutex> lock(mMutexPose);
-  return mImuBias;
-}
-
 Map *KeyFrame::GetMap() {
   unique_lock<mutex> lock(mMutexMap);
   return mpMap;
@@ -857,10 +741,10 @@ void KeyFrame::PreSave(set<KeyFrame *> &spKF, set<MapPoint *> &spMP,
   mvBackupMapPointsId.reserve(N);
   for (int i = 0; i < N; ++i) {
     if (mvpMapPoints[i] && spMP.find(mvpMapPoints[i]) !=
-                               spMP.end())  // Checks if the element is not null
+                               spMP.end()) // Checks if the element is not null
       mvBackupMapPointsId.push_back(mvpMapPoints[i]->mnId);
-    else  // If the element is null his value is -1 because all the id are
-          // positives
+    else // If the element is null his value is -1 because all the id are
+         // positives
       mvBackupMapPointsId.push_back(-1);
   }
   // Save the id of each connected KF with it weight
@@ -917,8 +801,6 @@ void KeyFrame::PreSave(set<KeyFrame *> &spKF, set<MapPoint *> &spMP,
   mBackupNextKFId = -1;
   if (mNextKF && spKF.find(mNextKF) != spKF.end())
     mBackupNextKFId = mNextKF->mnId;
-
-  if (mpImuPreintegrated) mBackupImuPreintegrated.CopyFrom(mpImuPreintegrated);
 }
 
 void KeyFrame::PostLoad(map<long unsigned int, KeyFrame *> &mpKFid,
@@ -953,7 +835,8 @@ void KeyFrame::PostLoad(map<long unsigned int, KeyFrame *> &mpKFid,
   }
 
   // Restore parent KeyFrame
-  if (mBackupParentId >= 0) mpParent = mpKFid[mBackupParentId];
+  if (mBackupParentId >= 0)
+    mpParent = mpKFid[mBackupParentId];
 
   // KeyFrame childrens
   mspChildrens.clear();
@@ -999,7 +882,6 @@ void KeyFrame::PostLoad(map<long unsigned int, KeyFrame *> &mpKFid,
   if (mBackupNextKFId != -1) {
     mNextKF = mpKFid[mBackupNextKFId];
   }
-  mpImuPreintegrated = &mBackupImuPreintegrated;
 
   // Remove all backup container
   mvBackupMapPointsId.clear();
@@ -1034,8 +916,10 @@ bool KeyFrame::ProjectPointDistort(MapPoint *pMP, cv::Point2f &kp, float &u,
 
   // cout << "c";
 
-  if (u < mnMinX || u > mnMaxX) return false;
-  if (v < mnMinY || v > mnMaxY) return false;
+  if (u < mnMinX || u > mnMaxX)
+    return false;
+  if (v < mnMinY || v > mnMaxY)
+    return false;
 
   float x = (u - cx) * invfx;
   float y = (v - cy) * invfy;
@@ -1090,8 +974,10 @@ bool KeyFrame::ProjectPointUnDistort(MapPoint *pMP, cv::Point2f &kp, float &u,
   u = fx * PcX * invz + cx;
   v = fy * PcY * invz + cy;
 
-  if (u < mnMinX || u > mnMaxX) return false;
-  if (v < mnMinY || v > mnMaxY) return false;
+  if (u < mnMinX || u > mnMaxX)
+    return false;
+  if (v < mnMinY || v > mnMaxY)
+    return false;
 
   kp = cv::Point2f(u, v);
 
@@ -1146,30 +1032,31 @@ void KeyFrame::SetKeyFrameDatabase(KeyFrameDatabase *pKFDB) {
 }
 
 // Assign the static flag to keypoint according to the depth image.
-// If there is depth value, the keypoint is static. If there is no depth value, the keypoint is dynamic.
-void KeyFrame::selectStaticFeatures()
-{
-    int count_dyn_pts = 0;
-    static_flags_.clear();
-    float cam_dmin = 0.01;
-    float cam_dmax = 20.0;
-    for ( size_t nf = 0; nf < mvKeysUn.size(); nf ++ ) {
+// If there is depth value, the keypoint is static. If there is no depth value,
+// the keypoint is dynamic.
+void KeyFrame::selectStaticFeatures() {
+  int count_dyn_pts = 0;
+  static_flags_.clear();
+  float cam_dmin = 0.01;
+  float cam_dmax = 20.0;
+  for (size_t nf = 0; nf < mvKeysUn.size(); nf++) {
 
-        const cv::Point2f& kpt = mvKeysUn.at ( nf ).pt;
-        const float& dp = depth_.at<float> ( kpt.y, kpt.x );
+    const cv::Point2f &kpt = mvKeysUn.at(nf).pt;
+    const float &dp = depth_.at<float>(kpt.y, kpt.x);
 
-        if ( dp > 0 ) {
-            static_flags_.push_back ( true );
-        } else if(dp < 0.0f) {
-            static_flags_.push_back ( false );
-            mvpMapPoints.at(nf) = static_cast<MapPoint*>(NULL); // delete the mpt.
-           
-            mvDynKeysUn.push_back(mvKeysUn[nf]);
-            
-            count_dyn_pts++;
-        }
-    } // for all keypoints.
-    cout << "Deleted " << count_dyn_pts << " MPs by unmatched Depth threshold " << endl;
+    if (dp > 0) {
+      static_flags_.push_back(true);
+    } else if (dp < 0.0f) {
+      static_flags_.push_back(false);
+      mvpMapPoints.at(nf) = static_cast<MapPoint *>(NULL); // delete the mpt.
+
+      mvDynKeysUn.push_back(mvKeysUn[nf]);
+
+      count_dyn_pts++;
+    }
+  } // for all keypoints.
+  cout << "Deleted " << count_dyn_pts << " MPs by unmatched Depth threshold "
+       << endl;
 } // selectStaticFeatures
 
-}  // namespace RVWO
+} // namespace RVWO

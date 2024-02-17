@@ -49,17 +49,14 @@
  * SUCH DAMAGE.                                                               *
  ******************************************************************************/
 
-#include "MLPnPsolver.h"
+#include "geometry/ml_PnP_solver.h"
 
 #include <Eigen/Sparse>
 
 namespace RVWO {
-MLPnPsolver::MLPnPsolver(const Frame& F,
-                         const vector<MapPoint*>& vpMapPointMatches)
-    : mnInliersi(0),
-      mnIterations(0),
-      mnBestInliers(0),
-      N(0),
+MLPnPsolver::MLPnPsolver(const Frame &F,
+                         const vector<MapPoint *> &vpMapPointMatches)
+    : mnInliersi(0), mnIterations(0), mnBestInliers(0), N(0),
       mpCamera(F.mpCamera) {
   mvpMapPointMatches = vpMapPointMatches;
   mvBearingVecs.reserve(F.mvpMapPoints.size());
@@ -71,12 +68,13 @@ MLPnPsolver::MLPnPsolver(const Frame& F,
 
   int idx = 0;
   for (size_t i = 0, iend = mvpMapPointMatches.size(); i < iend; i++) {
-    MapPoint* pMP = vpMapPointMatches[i];
+    MapPoint *pMP = vpMapPointMatches[i];
 
     if (pMP) {
       if (!pMP->isBad()) {
-        if (i >= F.mvKeysUn.size()) continue;
-        const cv::KeyPoint& kp = F.mvKeysUn[i];
+        if (i >= F.mvKeysUn.size())
+          continue;
+        const cv::KeyPoint &kp = F.mvKeysUn[i];
 
         mvP2D.push_back(kp.pt);
         mvSigma2.push_back(F.mvLevelSigma2[kp.octave]);
@@ -104,9 +102,9 @@ MLPnPsolver::MLPnPsolver(const Frame& F,
 }
 
 // RANSAC methods
-bool MLPnPsolver::iterate(int nIterations, bool& bNoMore,
-                          vector<bool>& vbInliers, int& nInliers,
-                          Eigen::Matrix4f& Tout) {
+bool MLPnPsolver::iterate(int nIterations, bool &bNoMore,
+                          vector<bool> &vbInliers, int &nInliers,
+                          Eigen::Matrix4f &Tout) {
   Tout.setIdentity();
   bNoMore = false;
   vbInliers.clear();
@@ -196,7 +194,8 @@ bool MLPnPsolver::iterate(int nIterations, bool& bNoMore,
         nInliers = mnRefinedInliers;
         vbInliers = vector<bool>(mvpMapPointMatches.size(), false);
         for (int i = 0; i < N; i++) {
-          if (mvbRefinedInliers[i]) vbInliers[mvKeyPointIndices[i]] = true;
+          if (mvbRefinedInliers[i])
+            vbInliers[mvKeyPointIndices[i]] = true;
         }
         Tout = mRefinedTcw;
         return true;
@@ -210,7 +209,8 @@ bool MLPnPsolver::iterate(int nIterations, bool& bNoMore,
       nInliers = mnBestInliers;
       vbInliers = vector<bool>(mvpMapPointMatches.size(), false);
       for (int i = 0; i < N; i++) {
-        if (mvbBestInliers[i]) vbInliers[mvKeyPointIndices[i]] = true;
+        if (mvbBestInliers[i])
+          vbInliers[mvKeyPointIndices[i]] = true;
       }
       Tout = mBestTcw;
       return true;
@@ -229,14 +229,16 @@ void MLPnPsolver::SetRansacParameters(double probability, int minInliers,
   mRansacEpsilon = epsilon;
   mRansacMinSet = minSet;
 
-  N = mvP2D.size();  // number of correspondences
+  N = mvP2D.size(); // number of correspondences
 
   mvbInliersi.resize(N);
 
   // Adjust Parameters according to number of correspondences
   int nMinInliers = N * mRansacEpsilon;
-  if (nMinInliers < mRansacMinInliers) nMinInliers = mRansacMinInliers;
-  if (nMinInliers < minSet) nMinInliers = minSet;
+  if (nMinInliers < mRansacMinInliers)
+    nMinInliers = mRansacMinInliers;
+  if (nMinInliers < minSet)
+    nMinInliers = minSet;
   mRansacMinInliers = nMinInliers;
 
   if (mRansacEpsilon < (float)mRansacMinInliers / N)
@@ -346,10 +348,10 @@ bool MLPnPsolver::Refine() {
 }
 
 // MLPnP methods
-void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
-                              const cov3_mats_t& covMats,
-                              const std::vector<int>& indices,
-                              transformation_t& result) {
+void MLPnPsolver::computePose(const bearingVectors_t &f, const points_t &p,
+                              const cov3_mats_t &covMats,
+                              const std::vector<int> &indices,
+                              transformation_t &result) {
   size_t numberCorrespondences = indices.size();
   assert(numberCorrespondences > 5);
 
@@ -398,7 +400,7 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
   Eigen::SparseMatrix<double> P(2 * numberCorrespondences,
                                 2 * numberCorrespondences);
   bool use_cov = false;
-  P.setIdentity();  // standard
+  P.setIdentity(); // standard
 
   // if we do have covariance information
   // -> fill covariance matrix
@@ -512,7 +514,7 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
   Eigen::MatrixXd AtPA;
   if (use_cov)
     AtPA = A.transpose() * P *
-           A;  // setting up the full normal equations seems to be unstable
+           A; // setting up the full normal equations seems to be unstable
   else
     AtPA = A.transpose() * A;
 
@@ -525,7 +527,7 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
   ////////////////////////////////
   rotation_t Rout;
   translation_t tout;
-  if (planar)  // planar case
+  if (planar) // planar case
   {
     rotation_t tmp;
     // until now, we only estimated
@@ -539,11 +541,12 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
     double scale =
         1.0 / std::sqrt(std::abs(tmp.col(1).norm() * tmp.col(2).norm()));
     // find best rotation matrix in frobenius sense
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(
-        tmp, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(tmp, Eigen::ComputeFullU |
+                                                          Eigen::ComputeFullV);
     rotation_t Rout1 = svd_R_frob.matrixU() * svd_R_frob.matrixV().transpose();
     // test if we found a good rotation matrix
-    if (Rout1.determinant() < 0) Rout1 *= -1.0;
+    if (Rout1.determinant() < 0)
+      Rout1 *= -1.0;
     // rotate this matrix back using the eigen frame
     Rout1 = eigenRot.transpose() * Rout1;
 
@@ -551,7 +554,8 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
         scale * translation_t(result1(6, 0), result1(7, 0), result1(8, 0));
     Rout1.transposeInPlace();
     Rout1 *= -1;
-    if (Rout1.determinant() < 0.0) Rout1.col(2) *= -1;
+    if (Rout1.determinant() < 0.0)
+      Rout1.col(2) *= -1;
     // now we have to find the best out of 4 combinations
     rotation_t R1, R2;
     R1.col(0) = Rout1.col(0);
@@ -588,7 +592,7 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
     int idx = std::distance(std::begin(normVal), findMinRepro);
     Rout = Ts[idx].block<3, 3>(0, 0);
     tout = Ts[idx].block<3, 1>(0, 3);
-  } else  // non-planar
+  } else // non-planar
   {
     rotation_t tmp;
     tmp << result1(0, 0), result1(3, 0), result1(6, 0), result1(1, 0),
@@ -602,11 +606,12 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
     // double scale = 1.0 / std::sqrt(std::abs(tmp.col(0).norm() *
     // tmp.col(1).norm()));
     //  find best rotation matrix in frobenius sense
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(
-        tmp, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd_R_frob(tmp, Eigen::ComputeFullU |
+                                                          Eigen::ComputeFullV);
     Rout = svd_R_frob.matrixU() * svd_R_frob.matrixV().transpose();
     // test if we found a good rotation matrix
-    if (Rout.determinant() < 0) Rout *= -1.0;
+    if (Rout.determinant() < 0)
+      Rout *= -1.0;
     // scale translation
     tout = Rout * (scale * translation_t(result1(9, 0), result1(10, 0),
                                          result1(11, 0)));
@@ -659,7 +664,7 @@ void MLPnPsolver::computePose(const bearingVectors_t& f, const points_t& p,
   result.block<3, 1>(0, 3) = tout;
 }
 
-Eigen::Matrix3d MLPnPsolver::rodrigues2rot(const Eigen::Vector3d& omega) {
+Eigen::Matrix3d MLPnPsolver::rodrigues2rot(const Eigen::Vector3d &omega) {
   rotation_t R = Eigen::Matrix3d::Identity();
 
   Eigen::Matrix3d skewW;
@@ -675,7 +680,7 @@ Eigen::Matrix3d MLPnPsolver::rodrigues2rot(const Eigen::Vector3d& omega) {
   return R;
 }
 
-Eigen::Vector3d MLPnPsolver::rot2rodrigues(const Eigen::Matrix3d& R) {
+Eigen::Vector3d MLPnPsolver::rot2rodrigues(const Eigen::Matrix3d &R) {
   rodrigues_t omega;
   omega << 0.0, 0.0, 0.0;
 
@@ -691,8 +696,8 @@ Eigen::Vector3d MLPnPsolver::rot2rodrigues(const Eigen::Matrix3d& R) {
   return omega;
 }
 
-void MLPnPsolver::mlpnp_gn(Eigen::VectorXd& x, const points_t& pts,
-                           const std::vector<Eigen::MatrixXd>& nullspaces,
+void MLPnPsolver::mlpnp_gn(Eigen::VectorXd &x, const points_t &pts,
+                           const std::vector<Eigen::MatrixXd> &nullspaces,
                            const Eigen::SparseMatrix<double> Kll,
                            bool use_cov) {
   const int numObservations = pts.size();
@@ -708,7 +713,7 @@ void MLPnPsolver::mlpnp_gn(Eigen::VectorXd& x, const points_t& pts,
   Eigen::VectorXd rd(2 * numObservations);
   Eigen::MatrixXd Jac(2 * numObservations, numUnknowns);
   Eigen::VectorXd g(numUnknowns, 1);
-  Eigen::VectorXd dx(numUnknowns, 1);  // result vector
+  Eigen::VectorXd dx(numUnknowns, 1); // result vector
 
   Jac.setZero();
   r.setZero();
@@ -753,14 +758,14 @@ void MLPnPsolver::mlpnp_gn(Eigen::VectorXd& x, const points_t& pts,
       x = x - dx;
 
     ++it_cnt;
-  }  // while
+  } // while
   // result
 }
 
 void MLPnPsolver::mlpnp_residuals_and_jacs(
-    const Eigen::VectorXd& x, const points_t& pts,
-    const std::vector<Eigen::MatrixXd>& nullspaces, Eigen::VectorXd& r,
-    Eigen::MatrixXd& fjac, bool getJacs) {
+    const Eigen::VectorXd &x, const points_t &pts,
+    const std::vector<Eigen::MatrixXd> &nullspaces, Eigen::VectorXd &r,
+    Eigen::MatrixXd &fjac, bool getJacs) {
   rodrigues_t w(x[0], x[1], x[2]);
   translation_t T(x[3], x[4], x[5]);
 
@@ -800,11 +805,11 @@ void MLPnPsolver::mlpnp_residuals_and_jacs(
   }
 }
 
-void MLPnPsolver::mlpnpJacs(const point_t& pt,
-                            const Eigen::Vector3d& nullspace_r,
-                            const Eigen::Vector3d& nullspace_s,
-                            const rodrigues_t& w, const translation_t& t,
-                            Eigen::MatrixXd& jacs) {
+void MLPnPsolver::mlpnpJacs(const point_t &pt,
+                            const Eigen::Vector3d &nullspace_r,
+                            const Eigen::Vector3d &nullspace_s,
+                            const rodrigues_t &w, const translation_t &t,
+                            Eigen::MatrixXd &jacs) {
   double r1 = nullspace_r[0];
   double r2 = nullspace_r[1];
   double r3 = nullspace_r[2];
@@ -1242,4 +1247,4 @@ void MLPnPsolver::mlpnpJacs(const point_t& pt,
   jacs(1, 5) = s3 * t65 - t14 * t101 * t167 * t216 * (1.0 / 2.0);
 }
 MLPnPsolver::~MLPnPsolver() = default;
-}  // namespace RVWO
+} // namespace RVWO

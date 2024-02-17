@@ -5,15 +5,15 @@
 #include "geometry/odom_factor.h"
 namespace RVWO {
 
-EdgeWOdometry::EdgeWOdometry(ODOM::Preintegrated* pInt) : mpInt(pInt) {
+EdgeWOdometry::EdgeWOdometry(ODOM::Preintegrated *pInt) : mpInt(pInt) {
   // Extrinsic matrix
   Tbo = mpInt->Tbo.cast<double>();
   // Set information matrix
   setInformation(pInt->Cov1.cast<double>().inverse());
 }
 void EdgeWOdometry::computeError() {
-  const auto* VP1 = dynamic_cast<const VertexPose*>(_vertices[0]);
-  const auto* VP2 = dynamic_cast<const VertexPose*>(_vertices[1]);
+  const auto *VP1 = dynamic_cast<const VertexPose *>(_vertices[0]);
+  const auto *VP2 = dynamic_cast<const VertexPose *>(_vertices[1]);
 
   const Eigen::Matrix3d Rbo = Tbo.rotationMatrix();
   const Eigen::Vector3d tbo = Tbo.translation();
@@ -39,8 +39,8 @@ void EdgeWOdometry::computeError() {
   _error << er, ep;
 }
 void EdgeWOdometry::linearizeOplus() {
-  const auto* VP1 = dynamic_cast<const VertexPose*>(_vertices[0]);
-  const auto* VP2 = dynamic_cast<const VertexPose*>(_vertices[1]);
+  const auto *VP1 = dynamic_cast<const VertexPose *>(_vertices[0]);
+  const auto *VP2 = dynamic_cast<const VertexPose *>(_vertices[1]);
 
   const Eigen::Matrix3d Rbo = Tbo.rotationMatrix();
   const Eigen::Vector3d tbo = Tbo.translation();
@@ -59,12 +59,12 @@ void EdgeWOdometry::linearizeOplus() {
       Sophus::SO3d(Eigen::Quaterniond(Rob * Rbw1 * VP2->estimate().Rwb * Rbo)
                        .normalized())
           .log();
-  const Eigen::Matrix3d invJr;  // = InverseRightJacobianSO3(deltaR);
+  const Eigen::Matrix3d invJr; // = InverseRightJacobianSO3(deltaR);
   Sophus::rightJacobianInvSO3(deltaR, invJr);
   _jacobianOplusXi.setZero();
   // Jacobian wrt Pose1
   // rotation
-  _jacobianOplusXi.block<1, 3>(0, 0) = -e3.transpose() * invJr * tmp;  // OK
+  _jacobianOplusXi.block<1, 3>(0, 0) = -e3.transpose() * invJr * tmp; // OK
   //    _jacobianOplusXi.block<2, 3>(1, 0) =
   //        lambd * Rbo.transpose() *
   //        Skew(Rbw1 * (VP2->estimate().twb + Rwb2 * tbo -
@@ -97,4 +97,4 @@ void EdgeWOdometry::linearizeOplus() {
     // ROS_BREAK();
   }
 }
-}  // namespace RVWO
+} // namespace RVWO

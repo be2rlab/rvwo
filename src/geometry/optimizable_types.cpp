@@ -19,22 +19,23 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "OptimizableTypes.h"
+#include "geometry/optimizable_types.h"
 
 namespace RVWO {
-bool EdgeSE3ProjectXYZOnlyPose::read(std::istream& is) {
+bool EdgeSE3ProjectXYZOnlyPose::read(std::istream &is) {
   for (int i = 0; i < 2; i++) {
     is >> _measurement[i];
   }
   for (int i = 0; i < 2; i++)
     for (int j = i; j < 2; j++) {
       is >> information()(i, j);
-      if (i != j) information()(j, i) = information()(i, j);
+      if (i != j)
+        information()(j, i) = information()(i, j);
     }
   return true;
 }
 
-bool EdgeSE3ProjectXYZOnlyPose::write(std::ostream& os) const {
+bool EdgeSE3ProjectXYZOnlyPose::write(std::ostream &os) const {
   for (int i = 0; i < 2; i++) {
     os << measurement()[i] << " ";
   }
@@ -47,7 +48,7 @@ bool EdgeSE3ProjectXYZOnlyPose::write(std::ostream& os) const {
 }
 
 void EdgeSE3ProjectXYZOnlyPose::linearizeOplus() {
-  auto* vi = static_cast<g2o::VertexSE3Expmap*>(_vertices[0]);
+  auto *vi = static_cast<g2o::VertexSE3Expmap *>(_vertices[0]);
   Eigen::Vector3d xyz_trans = vi->estimate().map(Xw);
 
   double x = xyz_trans[0];
@@ -111,19 +112,20 @@ EdgeSE3ProjectXYZ::EdgeSE3ProjectXYZ()
     : BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ,
                      g2o::VertexSE3Expmap>() {}
 
-bool EdgeSE3ProjectXYZ::read(std::istream& is) {
+bool EdgeSE3ProjectXYZ::read(std::istream &is) {
   for (int i = 0; i < 2; i++) {
     is >> _measurement[i];
   }
   for (int i = 0; i < 2; i++)
     for (int j = i; j < 2; j++) {
       is >> information()(i, j);
-      if (i != j) information()(j, i) = information()(i, j);
+      if (i != j)
+        information()(j, i) = information()(i, j);
     }
   return true;
 }
 
-bool EdgeSE3ProjectXYZ::write(std::ostream& os) const {
+bool EdgeSE3ProjectXYZ::write(std::ostream &os) const {
   for (int i = 0; i < 2; i++) {
     os << measurement()[i] << " ";
   }
@@ -136,9 +138,9 @@ bool EdgeSE3ProjectXYZ::write(std::ostream& os) const {
 }
 
 void EdgeSE3ProjectXYZ::linearizeOplus() {
-  auto* vj = static_cast<g2o::VertexSE3Expmap*>(_vertices[1]);
+  auto *vj = static_cast<g2o::VertexSE3Expmap *>(_vertices[1]);
   g2o::SE3Quat T(vj->estimate());
-  auto* vi = static_cast<g2o::VertexSBAPointXYZ*>(_vertices[0]);
+  auto *vi = static_cast<g2o::VertexSBAPointXYZ *>(_vertices[0]);
   Eigen::Vector3d xyz = vi->estimate();
   Eigen::Vector3d xyz_trans = T.map(xyz);
 
@@ -163,19 +165,20 @@ EdgeSE3ProjectXYZToBody::EdgeSE3ProjectXYZToBody()
     : BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ,
                      g2o::VertexSE3Expmap>() {}
 
-bool EdgeSE3ProjectXYZToBody::read(std::istream& is) {
+bool EdgeSE3ProjectXYZToBody::read(std::istream &is) {
   for (int i = 0; i < 2; i++) {
     is >> _measurement[i];
   }
   for (int i = 0; i < 2; i++)
     for (int j = i; j < 2; j++) {
       is >> information()(i, j);
-      if (i != j) information()(j, i) = information()(i, j);
+      if (i != j)
+        information()(j, i) = information()(i, j);
     }
   return true;
 }
 
-bool EdgeSE3ProjectXYZToBody::write(std::ostream& os) const {
+bool EdgeSE3ProjectXYZToBody::write(std::ostream &os) const {
   for (int i = 0; i < 2; i++) {
     os << measurement()[i] << " ";
   }
@@ -188,10 +191,10 @@ bool EdgeSE3ProjectXYZToBody::write(std::ostream& os) const {
 }
 
 void EdgeSE3ProjectXYZToBody::linearizeOplus() {
-  auto* vj = static_cast<g2o::VertexSE3Expmap*>(_vertices[1]);
+  auto *vj = static_cast<g2o::VertexSE3Expmap *>(_vertices[1]);
   g2o::SE3Quat T_lw(vj->estimate());
   g2o::SE3Quat T_rw = mTrl * T_lw;
-  auto* vi = static_cast<g2o::VertexSBAPointXYZ*>(_vertices[0]);
+  auto *vi = static_cast<g2o::VertexSBAPointXYZ *>(_vertices[0]);
   Eigen::Vector3d X_w = vi->estimate();
   Eigen::Vector3d X_l = T_lw.map(X_w);
   Eigen::Vector3d X_r = mTrl.map(T_lw.map(X_w));
@@ -219,7 +222,7 @@ VertexSim3Expmap::VertexSim3Expmap() : BaseVertex<7, g2o::Sim3>() {
   _fix_scale = false;
 }
 
-bool VertexSim3Expmap::read(std::istream& is) {
+bool VertexSim3Expmap::read(std::istream &is) {
   g2o::Vector7d cam2world;
   for (int i = 0; i < 6; i++) {
     is >> cam2world[i];
@@ -241,7 +244,7 @@ bool VertexSim3Expmap::read(std::istream& is) {
   return true;
 }
 
-bool VertexSim3Expmap::write(std::ostream& os) const {
+bool VertexSim3Expmap::write(std::ostream &os) const {
   g2o::Sim3 cam2world(estimate().inverse());
   g2o::Vector7d lv = cam2world.log();
   for (int i = 0; i < 7; i++) {
@@ -263,7 +266,7 @@ EdgeSim3ProjectXYZ::EdgeSim3ProjectXYZ()
     : g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ,
                           VertexSim3Expmap>() {}
 
-bool EdgeSim3ProjectXYZ::read(std::istream& is) {
+bool EdgeSim3ProjectXYZ::read(std::istream &is) {
   for (int i = 0; i < 2; i++) {
     is >> _measurement[i];
   }
@@ -271,12 +274,13 @@ bool EdgeSim3ProjectXYZ::read(std::istream& is) {
   for (int i = 0; i < 2; i++)
     for (int j = i; j < 2; j++) {
       is >> information()(i, j);
-      if (i != j) information()(j, i) = information()(i, j);
+      if (i != j)
+        information()(j, i) = information()(i, j);
     }
   return true;
 }
 
-bool EdgeSim3ProjectXYZ::write(std::ostream& os) const {
+bool EdgeSim3ProjectXYZ::write(std::ostream &os) const {
   for (int i = 0; i < 2; i++) {
     os << _measurement[i] << " ";
   }
@@ -292,7 +296,7 @@ EdgeInverseSim3ProjectXYZ::EdgeInverseSim3ProjectXYZ()
     : g2o::BaseBinaryEdge<2, Eigen::Vector2d, g2o::VertexSBAPointXYZ,
                           VertexSim3Expmap>() {}
 
-bool EdgeInverseSim3ProjectXYZ::read(std::istream& is) {
+bool EdgeInverseSim3ProjectXYZ::read(std::istream &is) {
   for (int i = 0; i < 2; i++) {
     is >> _measurement[i];
   }
@@ -300,12 +304,13 @@ bool EdgeInverseSim3ProjectXYZ::read(std::istream& is) {
   for (int i = 0; i < 2; i++)
     for (int j = i; j < 2; j++) {
       is >> information()(i, j);
-      if (i != j) information()(j, i) = information()(i, j);
+      if (i != j)
+        information()(j, i) = information()(i, j);
     }
   return true;
 }
 
-bool EdgeInverseSim3ProjectXYZ::write(std::ostream& os) const {
+bool EdgeInverseSim3ProjectXYZ::write(std::ostream &os) const {
   for (int i = 0; i < 2; i++) {
     os << _measurement[i] << " ";
   }
@@ -317,4 +322,4 @@ bool EdgeInverseSim3ProjectXYZ::write(std::ostream& os) const {
   return os.good();
 }
 
-}  // namespace RVWO
+} // namespace RVWO

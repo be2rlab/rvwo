@@ -6,10 +6,8 @@
 #include "sophus/se3.hpp"
 namespace RVWO {
 namespace ODOM {
-Preintegrated::Preintegrated(Eigen::Vector3d& vNoises, Sophus::SE3f& Tbo_)
-    : NoiseX(vNoises.x()),
-      NoiseY(vNoises.y()),
-      NoiseRotZ(vNoises.z()),
+Preintegrated::Preintegrated(Eigen::Vector3d &vNoises, Sophus::SE3f &Tbo_)
+    : NoiseX(vNoises.x()), NoiseY(vNoises.y()), NoiseRotZ(vNoises.z()),
       Tbo(Tbo_) {
   Meas = Sophus::SE2f(Eigen::Rotation2Df::Identity().toRotationMatrix(),
                       Eigen::Vector2f::Zero());
@@ -18,8 +16,8 @@ Preintegrated::Preintegrated(Eigen::Vector3d& vNoises, Sophus::SE3f& Tbo_)
   Delta.setZero();
   mvMeasurements.clear();
 }
-void Preintegrated::IntegratedNewMeasurement(Sophus::SE2f& PrevMeas,
-                                             Sophus::SE2f& CurrMeas) {
+void Preintegrated::IntegratedNewMeasurement(Sophus::SE2f &PrevMeas,
+                                             Sophus::SE2f &CurrMeas) {
   // mvMeasurements.push_back(PrevMeas);
   // PrevMeas.so2().normalize();
   // CurrMeas.so2().normalize();
@@ -66,15 +64,10 @@ void Preintegrated::IntegratedNewMeasurement(Sophus::SE2f& PrevMeas,
       Ak1 * Sigmak1 * Ak1.transpose() + Bk1 * Sigma_vk1 * Bk1.transpose();
   Cov1 = Sigma_k_1_1;
 }
-Preintegrated::Preintegrated(Preintegrated* pOdomPre)
-    : Meas(pOdomPre->Meas),
-      Cov(pOdomPre->Cov),
-      Cov1(pOdomPre->Cov1),
-      NoiseX(pOdomPre->NoiseX),
-      NoiseY(pOdomPre->NoiseY),
-      NoiseRotZ(pOdomPre->NoiseRotZ),
-      Tbo(pOdomPre->Tbo),
-      Delta(pOdomPre->Delta),
-      mvMeasurements(pOdomPre->mvMeasurements) {}
-}  // namespace ODOM
-}  // namespace RVWO
+Preintegrated::Preintegrated(Preintegrated *pOdomPre)
+    : Meas(pOdomPre->Meas), Cov(pOdomPre->Cov), Cov1(pOdomPre->Cov1),
+      NoiseX(pOdomPre->NoiseX), NoiseY(pOdomPre->NoiseY),
+      NoiseRotZ(pOdomPre->NoiseRotZ), Tbo(pOdomPre->Tbo),
+      Delta(pOdomPre->Delta), mvMeasurements(pOdomPre->mvMeasurements) {}
+} // namespace ODOM
+} // namespace RVWO

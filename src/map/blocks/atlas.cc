@@ -237,16 +237,6 @@ void Atlas::RemoveBadMaps() {
   mspBadMaps.clear();
 }
 
-bool Atlas::isInertial() {
-  unique_lock<mutex> lock(mMutexAtlas);
-  return mpCurrentMap->IsInertial();
-}
-
-void Atlas::SetInertialSensor() {
-  unique_lock<mutex> lock(mMutexAtlas);
-  mpCurrentMap->SetInertialSensor();
-}
-
 void Atlas::PreSave() {
   if (mpCurrentMap) {
     if (!mspMaps.empty() && mnLastInitKFidMap < mpCurrentMap->GetMaxKFid())

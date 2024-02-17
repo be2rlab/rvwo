@@ -33,7 +33,7 @@
 #include <thread>
 #include <utility>
 
-#include "Converter.h"
+#include  "utils/converter.h"
 
 namespace RVWO {
 
@@ -72,12 +72,7 @@ System::System(const string& strVocFile, const string& strSettingsFile,
     cout << "Stereo" << endl;
   else if (mSensor == RGBD)
     cout << "RGB-D" << endl;
-  else if (mSensor == IMU_MONOCULAR)
-    cout << "Monocular-Inertial" << endl;
-  else if (mSensor == IMU_STEREO)
-    cout << "Stereo-Inertial" << endl;
-  else if (mSensor == IMU_RGBD)
-    cout << "RGB-D-Inertial" << endl;
+  // @todo(Jaafar): Add wheel odometry
 
   // Check settings file
   cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
@@ -187,8 +182,6 @@ System::System(const string& strVocFile, const string& strSettingsFile,
     // usleep(10*1000*1000);
   }
 
-  if (mSensor == IMU_STEREO || mSensor == IMU_MONOCULAR || mSensor == IMU_RGBD)
-    mpAtlas->SetInertialSensor();
 
   // Create Drawers. These are used by the Viewer
   mpFrameDrawer = new FrameDrawer(mpAtlas);

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.cc": "cpp",
+        "shared_mutex": "cpp"
+    }
+}

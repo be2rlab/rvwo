@@ -21,7 +21,7 @@ have received a copy of the GNU General Public License along with
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GeometricTools.h"
+#include "geometry/geometric_tools.h"
 
 #include "map/blocks/key_frame.h"
 

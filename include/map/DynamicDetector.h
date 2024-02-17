@@ -2,7 +2,7 @@
 #define MAP_DYNAMICDETECTOR_H
 
 #include "map/blocks/atlas.h"
-#include "Converter.h"
+#include  "utils/converter.h"
 #include "map/blocks/frame.h"
 #include "map/blocks/key_frame.h"
 #include "map/blocks/map.h"

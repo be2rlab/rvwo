@@ -25,13 +25,13 @@
 #include <iostream>
 #include <mutex>
 
-#include "Converter.h"
+#include  "utils/converter.h"
 #include "utils/drawer/frame_drawer.h"
-#include "G2oTypes.h"
-#include "GeometricTools.h"
+#include "geometry/g2o_types.h"
+#include "geometry/geometric_tools.h"
 #include "geometry/camera_models/kannala_brandt8.h"
-#include "MLPnPsolver.h"
-#include "ORBmatcher.h"
+#include "geometry/ml_PnP_solver.h"
+#include "utils/orb_matcher.h"
 #include "map/optimizer.h"
 #include "geometry/camera_models/pinhole.h"
 

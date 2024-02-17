@@ -19,7 +19,7 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "utils/Config.h"
+#include "utils/config.h"
 
 namespace RVWO {
 
