@@ -1,11 +1,11 @@
 #ifndef MAP_DYNAMICDETECTOR_H
 #define MAP_DYNAMICDETECTOR_H
 
-#include "Atlas.h"
+#include "map/blocks/atlas.h"
 #include "Converter.h"
-#include "Frame.h"
-#include "KeyFrame.h"
-#include "Map.h"
+#include "map/blocks/frame.h"
+#include "map/blocks/key_frame.h"
+#include "map/blocks/map.h"
 
 #include <Eigen/Dense>
 

@@ -3,9 +3,9 @@
 
 #include "DynamicCulling.h"
 #include "DynamicDetector.h"
-#include "KeyFrame.h"
-#include "LocalMapping.h"
-#include "Tracking.h"
+#include "map/blocks/key_frame.h"
+#include "map/local_mapping.h"
+#include "map/tracking.h"
 
 namespace RVWO {
 class DynamicDetector;
