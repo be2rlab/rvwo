@@ -9,8 +9,6 @@ services:
     network_mode: host
     ipc: host
     environment:
-      - DATASET=$DATASET
-      - SCENE=$SCENE
       - MODE=$MODE
       - QT_X11_NO_MITSHM=1
       - NVIDIA_VISIBLE_DEVICES=all
