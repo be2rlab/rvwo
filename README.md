@@ -8,14 +8,9 @@ RVWO is a system designed to provide robust localization and mapping for wheeled
 </div>
 
 ## Contributors
-[Jaafar Mahmoud](https://github.com/JaafarMahmoud1), [Andrey Penkovskiy](https://github.com/WFram), [Long Vuong](https://github.com/hellovuong)
-
-## Related video
-
-Coming soon...
-
-## Code & Dataset
-Our paper is currently under review. The code and private dataset will be released once the paper is accepted.
+[Andrey Penkovskiy](https://github.com/WFram),
+[Long Vuong](https://github.com/hellovuong),
+[Jaafar Mahmoud](https://github.com/JaafarMahmoud1)
 
 ## Acknowledgments
 We would like to thank the [ORB-SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3) developers for a great baseline system.

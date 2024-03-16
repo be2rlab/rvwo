@@ -1,0 +1,62 @@
+/**
+ * This file is part of ORB-SLAM3
+ *
+ * Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez
+ * Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
+ * Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós,
+ * University of Zaragoza.
+ *
+ * ORB-SLAM3 is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef CONVERTER_H
+#define CONVERTER_H
+
+#include <Eigen/Dense>
+#include <opencv2/core/core.hpp>
+#include <opencv2/core/eigen.hpp>
+
+#include "Thirdparty/Sophus/sophus/geometry.hpp"
+#include "Thirdparty/Sophus/sophus/sim3.hpp"
+#include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
+#include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
+
+namespace ORB_SLAM3 {
+
+class Converter {
+ public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  static std::vector<cv::Mat> toDescriptorVector(const cv::Mat& Descriptors);
+
+  static g2o::SE3Quat toSE3Quat(const cv::Mat &cvT);
+  static g2o::SE3Quat toSE3Quat(const Sophus::SE3f &T);
+  static g2o::SE3Quat toSE3Quat(const g2o::Sim3 &gSim3);
+
+  static cv::Mat toCvMat(const Eigen::Matrix<float, 3, 4>& m);
+  static cv::Mat toCvMat(const Eigen::Matrix<float, 3, 1>& m);
+  static cv::Mat toCvMat(const Eigen::Matrix<float, 3, 3>& m);
+
+  static Eigen::Matrix<float, 3, 1> toVector3f(const cv::Mat& cvVector);
+  static Eigen::Matrix<float, 3, 3> toMatrix3f(const cv::Mat& cvMat3);
+
+  // TODO: Sophus migration, to be deleted in the future
+  static Sophus::SE3<float> toSophus(const cv::Mat& T);
+  static Sophus::Sim3f toSophus(const g2o::Sim3& S);
+
+  static Eigen::Vector3d img2Cam (const Eigen::Vector2d& px, const double& depth, const Eigen::Vector4d& K);
+  static Eigen::Vector2d cam2Img (const Eigen::Vector3d& ptc, const Eigen::Vector4d& K);
+};
+
+}  // namespace ORB_SLAM3
+
+#endif  // CONVERTER_H
